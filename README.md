@@ -6,4 +6,4 @@ public-transport-map-da
 
 ## Launching
  - Launch the application by running `python app.py`
- - Visit [http://localhost:42523) in your preferred browser
+ - Visit http://localhost:42523 in your preferred browser
