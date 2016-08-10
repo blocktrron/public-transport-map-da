@@ -19,7 +19,7 @@ $(document).ready(function () {
                                 className: class_name,
                                 iconSize: [22, 22],
                                 iconAnchor: [11, 11],
-                                popupAnchor: [0, 0],
+                                popupAnchor: [0, -11],
                                 html: item.line
                             });
                             var marker = L.marker([item.latitude, item.longitude], {icon: icon})
