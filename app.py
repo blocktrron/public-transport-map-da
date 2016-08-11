@@ -32,10 +32,12 @@ def load_vehicledata():
             return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
                 'Content-Type': 'application/json; charset=utf-8'}
         else:
+            vehicle_data["last_updated"] = time.time()
             failed_attempts = + 1
             if (failed_attempts > 8):
                 vehicle_data["data"] = {}
-            return json.dumps({}, ensure_ascii=False), 500, {'Content-Type': 'application/json; charset=utf-8'}
+            return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
+                'Content-Type': 'application/json; charset=utf-8'}
     else:
         return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
