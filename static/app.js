@@ -1,70 +1,70 @@
 $(document).ready(function () {
     function updateVehicles() {
         $.ajax("/vehicledata")
-                .done(function (data) {
-                    data.vehicles.forEach(function (item, index) {
-                        var class_name;
-                        if (item.category == 5) {
-                            // Bus
-                            class_name = 'vehicle vehicle-bus';
-                        } else if (item.category == 1) {
-                            // Tram
-                            class_name = 'vehicle vehicle-tram';
-                        } else {
-                            class_name = 'vehicle vehicle-other';
-                        }
-                        var popup_content = "<strong> " + item.line + " - " + item.lastStop + "</strong><br>Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing;
-                        if (!(item.vehicleId in vehicles)) {
-                            var icon = L.divIcon({
-                                className: class_name,
-                                iconSize: [22, 22],
-                                iconAnchor: [11, 11],
-                                popupAnchor: [0, -11],
-                                html: item.line
-                            });
-                            var marker = L.marker([item.latitude, item.longitude], {icon: icon})
-                                    .bindPopup(popup_content);
-                            vehicles[item.vehicleId] = {
-                                lastAppearance: update_count,
-                                marker: marker,
-                                rawData: item
-                            };
-                            vehicle_layer.addLayer(vehicles[item.vehicleId].marker);
-                        } else {
-                            var position = new L.LatLng(item.latitude, item.longitude);
-                            vehicles[item.vehicleId].marker._popup.setContent(popup_content);
-                            vehicles[item.vehicleId].marker.setLatLng(position);
-                            vehicles[item.vehicleId].lastAppearance = update_count;
-                        }
-                    });
-
-                    for (var vehicleId in vehicles) {
-                        // Remove inactive vehicle
-                        if (vehicles.hasOwnProperty(vehicleId)) {
-                            if (vehicles[vehicleId].lastAppearance < update_count) {
-                                vehicle_layer.removeLayer(vehicles[vehicleId].marker);
-                                delete vehicles[vehicleId];
-                            }
-                        }
-                    }
-
-                    var timestamp = new Date(data.last_updated*1000);
-                    if(data.successful) {
-                        $('#last-update-status').html("Successful at ");
-
+            .done(function (data) {
+                data.vehicles.forEach(function (item, index) {
+                    var class_name;
+                    if (item.category == 5) {
+                        // Bus
+                        class_name = 'vehicle vehicle-bus';
+                    } else if (item.category == 1) {
+                        // Tram
+                        class_name = 'vehicle vehicle-tram';
                     } else {
-                        $('#last-update-status').html("Failed at ");
+                        class_name = 'vehicle vehicle-other';
                     }
+                    var popup_content = "<strong> " + item.line + " - " + item.lastStop + "</strong><br>Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing;
+                    if (!(item.vehicleId in vehicles)) {
+                        var icon = L.divIcon({
+                            className: class_name,
+                            iconSize: [22, 22],
+                            iconAnchor: [11, 11],
+                            popupAnchor: [0, -11],
+                            html: item.line
+                        });
+                        var marker = L.marker([item.latitude, item.longitude], {icon: icon})
+                            .bindPopup(popup_content);
+                        vehicles[item.vehicleId] = {
+                            lastAppearance: update_count,
+                            marker: marker,
+                            rawData: item
+                        };
+                        vehicle_layer.addLayer(vehicles[item.vehicleId].marker);
+                    } else {
+                        var position = new L.LatLng(item.latitude, item.longitude);
+                        vehicles[item.vehicleId].marker._popup.setContent(popup_content);
+                        vehicles[item.vehicleId].marker.setLatLng(position);
+                        vehicles[item.vehicleId].lastAppearance = update_count;
+                    }
+                });
 
-                    $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
+                for (var vehicleId in vehicles) {
+                    // Remove inactive vehicle
+                    if (vehicles.hasOwnProperty(vehicleId)) {
+                        if (vehicles[vehicleId].lastAppearance < update_count) {
+                            vehicle_layer.removeLayer(vehicles[vehicleId].marker);
+                            delete vehicles[vehicleId];
+                        }
+                    }
+                }
 
-                    update_count++;
-                })
-                .fail(function () {
-                    var timestamp = new Date();
-                    $('#last-update-status').html("Failed to query from Server at ");
-                    $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
-                })
+                var timestamp = new Date(data.last_updated * 1000);
+                if (data.successful) {
+                    $('#last-update-status').html("Successful at ");
+
+                } else {
+                    $('#last-update-status').html("Failed at ");
+                }
+
+                $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
+
+                update_count++;
+            })
+            .fail(function () {
+                var timestamp = new Date();
+                $('#last-update-status').html("Failed to query from Server at ");
+                $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
+            })
     }
 
     var map = L.map('map').setView([49.872906, 8.651617], 13);
