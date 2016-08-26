@@ -6,7 +6,7 @@ import time
 import requests
 
 app = Flask(__name__, static_url_path='/static')
-vehicle_data = {"last_updated": 0, "data": {}}
+vehicle_data = {"last_updated": 0, "successful": False, "vehicles": []}
 failed_attempts = 0
 
 
@@ -27,19 +27,21 @@ def load_vehicledata():
                     del vehicle["encodedPath"]
                     vehicle["latitude"] = round(vehicle["latitude"], 6)
                     vehicle["longitude"] = round(vehicle["longitude"], 6)
-                vehicle_data["data"] = root_obj
+                vehicle_data = root_obj
                 vehicle_data["last_updated"] = time.time()
-            return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
+                vehicle_data["successful"] = True
+            return json.dumps(vehicle_data, ensure_ascii=False), 200, {
                 'Content-Type': 'application/json; charset=utf-8'}
         else:
+            vehicle_data["successful"] = False
             vehicle_data["last_updated"] = time.time()
             failed_attempts = + 1
             if (failed_attempts > 8):
-                vehicle_data["data"] = {}
-            return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
+                vehicle_data["vehicles"] = {}
+            return json.dumps(vehicle_data, ensure_ascii=False), 200, {
                 'Content-Type': 'application/json; charset=utf-8'}
     else:
-        return json.dumps(vehicle_data["data"], ensure_ascii=False), 200, {
+        return json.dumps(vehicle_data, ensure_ascii=False), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
 
 

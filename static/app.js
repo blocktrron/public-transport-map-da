@@ -48,15 +48,21 @@ $(document).ready(function () {
                         }
                     }
 
-                    var timestamp = new Date(data.timestamp);
-                    $('#last-update-status').html("Successful at ");
+                    var timestamp = new Date(data.last_updated*1000);
+                    if(data.successful) {
+                        $('#last-update-status').html("Successful at ");
+
+                    } else {
+                        $('#last-update-status').html("Failed at ");
+                    }
+
                     $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
 
                     update_count++;
                 })
                 .fail(function () {
                     var timestamp = new Date();
-                    $('#last-update-status').html("Failed at ");
+                    $('#last-update-status').html("Failed to query from Server at ");
                     $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
                 })
     }
