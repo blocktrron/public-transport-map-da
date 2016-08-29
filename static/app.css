@@ -43,7 +43,7 @@ div#map {
     position: absolute;
     width: 22px;
     height: 22px;
-    font-size: 7pt
+    font-size: 7pt;
 }
 
 .vehicle-bearing {
