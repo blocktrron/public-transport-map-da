@@ -14,14 +14,15 @@ $(document).ready(function () {
                         class_name = 'vehicle vehicle-other';
                     }
                     var popup_content = "<strong> " + item.line + " - " + item.lastStop + "</strong><br>Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing;
-                    if (!(item.vehicleId in vehicles)) {
-                        var icon = L.divIcon({
+                    var icon = L.divIcon({
                             className: class_name,
                             iconSize: [22, 22],
                             iconAnchor: [11, 11],
                             popupAnchor: [0, -11],
                             html: '<div class="vehicle-bearing" id="vehicle-' + item.vehicleId + '"></div>' + item.line
                         });
+
+                    if (!(item.vehicleId in vehicles)) {
                         var marker = L.marker([item.latitude, item.longitude], {icon: icon})
                             .bindPopup(popup_content);
                         vehicles[item.vehicleId] = {
@@ -34,6 +35,7 @@ $(document).ready(function () {
                         var position = new L.LatLng(item.latitude, item.longitude);
                         vehicles[item.vehicleId].marker._popup.setContent(popup_content);
                         vehicles[item.vehicleId].marker.setLatLng(position);
+                        vehicles[item.vehicleId].marker.setIcon(icon);
                         vehicles[item.vehicleId].lastAppearance = update_count;
                     }
                     $(".vehicle-bearing#vehicle-" + item.vehicleId).css("transform", "rotate(" + item.bearing +"deg)");
