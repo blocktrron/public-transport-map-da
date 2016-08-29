@@ -20,7 +20,7 @@ $(document).ready(function () {
                             iconSize: [22, 22],
                             iconAnchor: [11, 11],
                             popupAnchor: [0, -11],
-                            html: item.line
+                            html: '<div class="vehicle-bearing" id="vehicle-' + item.vehicleId + '"></div>' + item.line
                         });
                         var marker = L.marker([item.latitude, item.longitude], {icon: icon})
                             .bindPopup(popup_content);
@@ -36,6 +36,7 @@ $(document).ready(function () {
                         vehicles[item.vehicleId].marker.setLatLng(position);
                         vehicles[item.vehicleId].lastAppearance = update_count;
                     }
+                    $(".vehicle-bearing#vehicle-" + item.vehicleId).css("transform", "rotate(" + item.bearing +"deg)");
                 });
 
                 for (var vehicleId in vehicles) {

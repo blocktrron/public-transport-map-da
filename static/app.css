@@ -40,7 +40,23 @@ div#map {
     border-radius: 50%;
     text-align: center;
     line-height: 22px;
+    position: absolute;
+    width: 22px;
+    height: 22px;
     font-size: 7pt
+}
+
+.vehicle-bearing {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    background: url(background.png) 0 0 repeat;
+    background-size: cover;
+    transform: rotate(0deg);
 }
 
 .vehicle-bus {
