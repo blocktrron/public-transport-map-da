@@ -8,6 +8,7 @@ import requests
 app = Flask(__name__, static_url_path='/static')
 vehicle_data = {"last_updated": 0, "successful": False, "vehicles": []}
 failed_attempts = 0
+update_interval = 15
 
 
 @app.route('/')
@@ -18,7 +19,7 @@ def show_page():
 @app.route("/vehicledata")
 def load_vehicledata():
     global vehicle_data, failed_attempts
-    if vehicle_data["last_updated"] + 14 < time.time():
+    if vehicle_data["last_updated"] + update_interval <= time.time():
         r = requests.get('https://routing.geomobile.de/v4/vehiclelivedata?bundleIdentifier=de.ivanto.heagmobilo')
         if r.status_code is 200:
             root_obj = json.loads(r.text)

@@ -72,7 +72,7 @@ $(document).ready(function () {
     var vehicle_layer = new L.FeatureGroup();
 
     var update_count = 0;
-    var update_interval = 15; // Update Interval in seconds
+    var update_interval = 5; // Update Interval in seconds
     var update_interval_id;
 
     var vehicles = {};
