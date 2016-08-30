@@ -7,7 +7,7 @@ html, body {
 }
 
 div#wrapper {
-    padding: 25px 0;
+    padding-bottom: 25px;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -20,14 +20,19 @@ div#content {
     height: 100%;
 }
 
-div#header {
-    margin-top: -25px;
+div#footer {
+    display: flex;
+    margin-bottom: -25px;
     height: 25px;
 }
 
-div#footer {
-    margin-bottom: -25px;
-    height: 25px;
+div#footer-left {
+    flex: 1;
+    text-align: left;
+}
+
+div#footer-right {
+    flex: 2;
     text-align: right;
 }
 

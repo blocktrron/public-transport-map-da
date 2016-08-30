@@ -9,14 +9,16 @@
 </head>
 <body>
 <div id="wrapper">
-    <div id="header">
-        <label><input type="checkbox" id="automatic-updates-enabled" checked/>Update automatically</label>
-    </div>
     <div id="content">
         <div id="map"></div> <!-- Map Container -->
     </div>
     <div id="footer">
-        Last updated: <span id="last-update-status"></span><span id="last-update-time">Never</span>
+        <div id="footer-left">
+            <label><input type="checkbox" id="automatic-updates-enabled" checked/>Update automatically</label>
+        </div>
+        <div id="footer-right">
+            Last updated: <span id="last-update-status"></span><span id="last-update-time">Never</span>
+        </div>
     </div>
 </div>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
