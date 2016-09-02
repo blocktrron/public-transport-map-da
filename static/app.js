@@ -70,7 +70,7 @@ $(document).ready(function () {
             })
     }
 
-    var map = L.map('map').setView([49.872906, 8.651617], 13);
+    var map;
     var vehicle_layer = new L.FeatureGroup();
 
     var update_count = 0;
@@ -88,9 +88,19 @@ $(document).ready(function () {
         }
     });
 
-    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    var osm_layer = new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        minZoom: 3, maxZoom: 18,
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    });
+
+    var opnv_layer = new L.TileLayer('http://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
+        minZoom: 3, maxZoom: 18,
+        attribution: '&copy; <a href="http://memomaps.de/">ÖPNV Karte</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
+    });
+
+    map = L.map('map', {center: [49.872906, 8.651617], zoom: 10, layers: [opnv_layer]});
+
+    L.control.layers({"ÖPNV Karte": opnv_layer, "OpenStreetMap": osm_layer}, {}).addTo(map);
     map.addLayer(vehicle_layer);
 
     updateVehicles();
