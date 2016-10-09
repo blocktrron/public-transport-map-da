@@ -7,6 +7,7 @@ import requests
 
 app = Flask(__name__, static_url_path='/static')
 vehicle_data = {"last_updated": 0, "successful": False, "vehicles": []}
+update_interval = 30
 
 
 @app.route('/')
@@ -34,6 +35,12 @@ def load_vehicledata():
         vehicle_data = {"last_updated": time.time(), "successful": False, "vehicles": []}
         return json.dumps(vehicle_data, ensure_ascii=False), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
+
+
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = update_interval
+    return response
 
 
 if __name__ == "__main__":
