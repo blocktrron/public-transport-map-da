@@ -3,17 +3,21 @@ $(document).ready(function () {
         $.ajax("/vehicledata")
             .done(function (data) {
                 data.vehicles.forEach(function (item, index) {
-                    var class_name;
+                    var class_name, vehicle_type;
                     if (item.category == 5) {
                         // Bus
                         class_name = 'vehicle vehicle-bus';
+                        vehicle_type = "Bus"
                     } else if (item.category == 1) {
                         // Tram
                         class_name = 'vehicle vehicle-tram';
+                        vehicle_type = "Tram"
                     } else {
                         class_name = 'vehicle vehicle-other';
+                        vehicle_type = "Line"
                     }
-                    var popup_content = "<strong> " + item.line + " - " + item.lastStop + "</strong><br>Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing;
+                    var popup_content = "<strong>" + vehicle_type + " " + item.line + " - " + item.lastStop + "</strong><br>" +
+                        "Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing + "<br><span class='popup-cordinates'>" + item.latitude + ", " + item.longitude + "</span>";
                     var icon = L.divIcon({
                             className: class_name,
                             iconSize: [22, 22],

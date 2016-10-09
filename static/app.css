@@ -75,3 +75,7 @@ div#map {
 .vehicle-other {
     background-color: #9e9e9e;
 }
+
+.popup-cordinates {
+    opacity: 0.6;
+}
