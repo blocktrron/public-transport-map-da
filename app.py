@@ -31,6 +31,7 @@ def load_vehicledata():
         return json.dumps(vehicle_data, ensure_ascii=False), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
     else:
+        vehicle_data = {"last_updated": time.time(), "successful": False, "vehicles": []}
         return json.dumps(vehicle_data, ensure_ascii=False), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
 
