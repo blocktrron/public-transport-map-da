@@ -98,6 +98,20 @@ $(document).ready(function () {
 
     map = L.map('map', {center: [49.872906, 8.651617], zoom: 10, layers: [opnv_layer]});
 
+    var map_pos_params = /[#]([0-9]+[\.][0-9]*)[;]([0-9]+[\.][0-9]*)[;]([0-9]+)/g.exec(window.location.href);
+
+    map.on('moveend', function() {
+        var mapPos = map.getCenter();
+        var mapZoom = map.getZoom()
+        var url = window.location.href.split('#')[0] + '#' + mapPos.lat + ';' + mapPos.lng + ';' + mapZoom;
+        history.pushState('', '', url);
+    });
+
+    if (map_pos_params !== null) {
+        map.panTo([map_pos_params[1], map_pos_params[2]]);
+        map.setZoom(map_pos_params[3]);
+    }
+
     L.control.layers({"ÖPNV Karte": opnv_layer, "OpenStreetMap": osm_layer}, {}).addTo(map);
     map.addLayer(vehicle_layer);
 
