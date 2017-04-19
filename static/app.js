@@ -56,12 +56,6 @@ $(document).ready(function () {
                 }
 
                 var timestamp = new Date(data.last_updated * 1000);
-                if (data.successful) {
-                    $('#last-update-status').html("Successful at ");
-
-                } else {
-                    $('#last-update-status').html("Failed at ");
-                }
 
                 $('#last-update-time').html(timestamp.toLocaleString('de-DE'));
 
