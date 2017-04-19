@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, send_from_directory, send_file
 import json
+import datetime
 import time
 import requests
 
@@ -26,6 +27,9 @@ def load_vehicledata():
             vehicle["latitude"] = round(vehicle["latitude"], 6)
             vehicle["longitude"] = round(vehicle["longitude"], 6)
         vehicle_data["vehicles"] = root_obj.get("vehicles", [])
+        if 'timestamp' in root_obj:
+            vehicle_data["last_updated"] = datetime.datetime.strptime(root_obj["timestamp"].split('+')[0],
+                                                                      "%Y-%m-%dT%H:%M:%S").strftime('%s')
 
     return json.dumps(vehicle_data, ensure_ascii=False), 200, {
         'Content-Type': 'application/json; charset=utf-8'}
