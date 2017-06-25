@@ -18,7 +18,7 @@ def show_page():
 
 @app.route("/vehicledata")
 def load_vehicledata():
-    r = requests.get('https://routing.geomobile.de/v4/vehiclelivedata?bundleIdentifier=de.ivanto.heagmobilo')
+    r = requests.get('https://routing.geomobile.de/test/vehiclelivedata?bundleIdentifier=de.ivanto.heagmobilo')
     vehicle_data = {"last_updated": int(time.time()), "vehicles": []}
     if r.status_code is 200:
         root_obj = json.loads(r.text)
