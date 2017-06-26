@@ -10,12 +10,21 @@ $(document).ready(function () {
             .done(function (data) {
                 map_objects = [];
                 data.forEach(function (item, idx) {
-                    var popup_content = "<strong>" + item.name + "</strong><br>" +
-                        "<span class='popup-cordinates'>" + item.id + "</span>";
-                    var marker = L.marker([item.lat, item.lon]).bindPopup(popup_content);
-                    var ao = {marker: marker};
-                    map_objects.push(ao);
-                    map_object_layer.addLayer(ao.marker);
+                    if (item.type === 'stop') {
+                        var popup_content = "<strong>" + item.name + "</strong><br>" +
+                            "<span class='popup-cordinates'>" + item.id + "</span>";
+                        var icon = L.icon({
+                            iconUrl: '/static/stop.png',
+                            iconSize: [22, 22],
+                            iconAnchor: [11, 11],
+                            popupAnchor: [0, -11],
+                        });
+                        var marker = L.marker([item.lat, item.lon]).bindPopup(popup_content);
+                        marker.setIcon(icon);
+                        var ao = {marker: marker};
+                        map_objects.push(ao);
+                        map_object_layer.addLayer(ao.marker);
+                    }
                 })
             })
     }
