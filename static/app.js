@@ -1,4 +1,25 @@
 $(document).ready(function () {
+    function removeMapElements() {
+        for (var o in map_objects) {
+            map_object_layer.removeLayer(o.marker);
+        }
+    }
+
+    function updateMapElements() {
+        $.ajax("/mapobjects")
+            .done(function (data) {
+                map_objects = [];
+                data.forEach(function (item, idx) {
+                    var popup_content = "<strong>" + item.name + "</strong><br>" +
+                        "<span class='popup-cordinates'>" + item.id + "</span>";
+                    var marker = L.marker([item.lat, item.lon]).bindPopup(popup_content);
+                    var ao = {marker: marker};
+                    map_objects.push(ao);
+                    map_object_layer.addLayer(ao.marker);
+                })
+            })
+    }
+
     function updateVehicles() {
         $.ajax("/vehicledata")
             .done(function (data) {
@@ -70,12 +91,14 @@ $(document).ready(function () {
 
     var map;
     var vehicle_layer = new L.FeatureGroup();
+    var map_object_layer = new L.FeatureGroup();
 
     var update_count = 0;
     var update_interval = 30; // Update Interval in seconds
     var update_interval_id;
 
     var vehicles = {};
+    var map_objects = [];
 
     $('#automatic-updates-enabled').on('click', function () {
         if (this.checked && update_interval_id == undefined) {
@@ -102,7 +125,7 @@ $(document).ready(function () {
 
     map.on('moveend', function() {
         var mapPos = map.getCenter();
-        var mapZoom = map.getZoom()
+        var mapZoom = map.getZoom();
         var url = window.location.href.split('#')[0] + '#' + mapPos.lat + ';' + mapPos.lng + ';' + mapZoom;
         history.pushState('', '', url);
     });
@@ -114,7 +137,9 @@ $(document).ready(function () {
 
     L.control.layers({"ÖPNV Karte": opnv_layer, "OpenStreetMap": osm_layer}, {}).addTo(map);
     map.addLayer(vehicle_layer);
+    map.addLayer(map_object_layer);
 
     updateVehicles();
+    updateMapElements();
     update_interval_id = setInterval(updateVehicles, update_interval * 1000);
 });

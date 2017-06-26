@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from flask import Flask, send_from_directory, send_file
 import json
-import datetime
-import time
-import requests
+
+from flask import Flask
+
+from ptda.connector import RemoteConnector
 
 app = Flask(__name__, static_url_path='/static')
-vehicle_data = {"last_updated": 0, "successful": False, "vehicles": []}
+connector = RemoteConnector('https://routing.geomobile.de/test', 'de.ivanto.heagmobilo')
 update_interval = 30
 
 
@@ -18,20 +18,25 @@ def show_page():
 
 @app.route("/vehicledata")
 def load_vehicledata():
-    r = requests.get('https://routing.geomobile.de/test/vehiclelivedata?bundleIdentifier=de.ivanto.heagmobilo')
-    vehicle_data = {"last_updated": int(time.time()), "vehicles": []}
-    if r.status_code is 200:
-        root_obj = json.loads(r.text)
-        for vehicle in root_obj.get("vehicles", []):
-            del vehicle["encodedPath"]
-            vehicle["latitude"] = round(vehicle["latitude"], 6)
-            vehicle["longitude"] = round(vehicle["longitude"], 6)
-        vehicle_data["vehicles"] = root_obj.get("vehicles", [])
-        if 'timestamp' in root_obj:
-            vehicle_data["last_updated"] = datetime.datetime.strptime(root_obj["timestamp"].split('+')[0],
-                                                                      "%Y-%m-%dT%H:%M:%S").strftime('%s')
+    connector.update_positions()
 
-    return json.dumps(vehicle_data, ensure_ascii=False), 200, {
+    h = {'last_updated': connector.vehicles_age, 'vehicles': []}
+    for v in connector.vehicles:
+        h['vehicles'].append({'category': v.category, 'lineId': v.line_id, 'latitude': round(v.latitude, 6),
+                              'longitude': round(v.longitude, 6), 'vehicleId': v.vehicle_id, 'bearing': v.bearing,
+                              'lastStop': v.last_stop, 'line': v.line, })
+
+    return json.dumps(h, ensure_ascii=False), 200, {
+        'Content-Type': 'application/json; charset=utf-8'}
+
+
+@app.route("/mapobjects")
+def load_mapobjects():
+    connector.update_mapobjects(49.872781, 8.651077, 7500)
+
+    h = [{'type': o.type, 'id': o.id, 'name': o.name, 'lat': o.lat, 'lon': o.lon} for o in connector.map_objects]
+
+    return json.dumps(h, ensure_ascii=False), 200, {
         'Content-Type': 'application/json; charset=utf-8'}
 
 
