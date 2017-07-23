@@ -7,7 +7,7 @@ from flask import Flask
 from ptda.connector import RemoteConnector
 
 app = Flask(__name__, static_url_path='/static')
-connector = RemoteConnector('https://routing.geomobile.de/test', 'de.ivanto.heagmobilo')
+connector = RemoteConnector('https://routing.geomobile.de/v4', 'de.ivanto.heagmobilo')
 update_interval = 30
 
 
