@@ -21,6 +21,27 @@ class Vehicle:
         self.encoded_path = encoded_path
 
 
+class Relation:
+    def __init__(self, id, name, reference, members):
+        self.id = id
+        self.name = name
+        self.referece = reference
+        self.members = members
+
+
+class Node:
+    def __init__(self, lat, lon):
+        self.lat = lat
+        self.lon = lon
+
+
+class Way:
+    def __init__(self, id, nodes, encoded_path):
+        self.id = id
+        self.nodes = nodes
+        self.encoded_path = encoded_path
+
+
 class MapObject:
     class Type(Enum):
         STOP = 'stop'

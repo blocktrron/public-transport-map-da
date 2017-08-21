@@ -2,10 +2,12 @@ import json
 from datetime import datetime
 from time import time
 
+import geojson
 import requests
+from geojson import LineString, FeatureCollection, Feature
 
 from ptda.exceptions import RequestException, NoDataException
-from ptda.objects import Vehicle, MapObject
+from ptda.objects import Vehicle, MapObject, Way, Node, Relation
 
 
 class RemoteConnector:
@@ -55,3 +57,34 @@ class RemoteConnector:
         self.map_objects = [MapObject(x['type'], x['id'], x['name'], x['latitude'], x['longitude']) for x in j]
 
         return True
+
+    def update_lineplans(self):
+        r = requests.get(
+            '{base_url}/osmlineplans?bundleIdentifier={identifier}'.format(
+                base_url=self.base_url, identifier=self.identifier))
+
+        if r.status_code != requests.codes.ok:
+            raise RequestException()
+
+        j = json.loads(r.content)
+
+        self.ways = {j['ways'][x]['id']: Way(j['ways'][x]['id'],
+                                             [Node(y['lat'], y['lon']) for y in j['ways'][x]['nodes']],
+                                             j['ways'][x]['encodedPath'])
+                     for x in j.get('ways', [])}
+
+        self.relations = [Relation(x['id'], x['name'], x['ref'], x['members']) for x in
+                          j.get('relations', [])]
+
+        return True
+
+    def ways_geojson(self):
+        f = []
+        for w in self.ways:
+            path = []
+            for n in self.ways[w].nodes:
+                path.append((n.lon, n.lat))
+            f.append(Feature(geometry=LineString(path), id=self.ways[w].id,
+                             properties={'id': self.ways[w].id, 'encodedPath': self.ways[w].encoded_path}))
+        fc = FeatureCollection(f)
+        return geojson.dumps(fc)

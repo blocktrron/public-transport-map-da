@@ -8,6 +8,8 @@ from ptda.connector import RemoteConnector
 
 app = Flask(__name__, static_url_path='/static')
 connector = RemoteConnector('https://routing.geomobile.de/v4', 'de.ivanto.heagmobilo')
+connector.update_lineplans()
+connector.update_mapobjects(49.872781, 8.651077, 7500)
 update_interval = 30
 
 
@@ -32,11 +34,18 @@ def load_vehicledata():
 
 @app.route("/mapobjects")
 def load_mapobjects():
-    connector.update_mapobjects(49.872781, 8.651077, 7500)
-
     h = [{'type': o.type, 'id': o.id, 'name': o.name, 'lat': o.lat, 'lon': o.lon} for o in connector.map_objects]
 
     return json.dumps(h, ensure_ascii=False), 200, {
+        'Content-Type': 'application/json; charset=utf-8'}
+
+
+@app.route("/lineplans")
+def load_lineplans():
+    r = {'relations': [{'id': x.id, 'members': x.members, 'name': x.name, 'reference': x.referece} for x in
+                       connector.relations], 'waypoints': json.loads(connector.ways_geojson())}
+
+    return json.dumps(r, ensure_ascii=False), 200, {
         'Content-Type': 'application/json; charset=utf-8'}
 
 

@@ -1,31 +1,28 @@
 $(document).ready(function () {
-    function removeMapElements() {
-        for (var o in map_objects) {
-            map_object_layer.removeLayer(o.marker);
-        }
+    function onVehicleClick(e) {
+        selected_ref = this.options.properties.line;
+        currentVehicleRoute = L.geoJSON(linedata.waypoints, {filter: filterLine});
+        routeLayer.addLayer(currentVehicleRoute);
     }
 
-    function updateMapElements() {
-        $.ajax("/mapobjects")
+    function onPopupClose(e) {
+        routeLayer.removeLayer(currentVehicleRoute);
+    }
+
+    function filterLine(feature) {
+        var corresponding_relations = [];
+        for (var i = 0; i < linedata.relations.length; i++) {
+            if (linedata.relations[i].reference === selected_ref) {
+                corresponding_relations = corresponding_relations.concat(linedata.relations[i].members);
+            }
+        }
+        return corresponding_relations.indexOf(feature.properties.id) > -1;
+    }
+
+    function updateLineplans() {
+        $.ajax("/lineplans")
             .done(function (data) {
-                map_objects = [];
-                data.forEach(function (item, idx) {
-                    if (item.type === 'stop') {
-                        var popup_content = "<strong>" + item.name + "</strong><br>" +
-                            "<span class='popup-cordinates'>" + item.id + "</span>";
-                        var icon = L.icon({
-                            iconUrl: '/static/stop.png',
-                            iconSize: [22, 22],
-                            iconAnchor: [11, 11],
-                            popupAnchor: [0, -11],
-                        });
-                        var marker = L.marker([item.lat, item.lon]).bindPopup(popup_content);
-                        marker.setIcon(icon);
-                        var ao = {marker: marker};
-                        map_objects.push(ao);
-                        map_object_layer.addLayer(ao.marker);
-                    }
-                })
+                linedata = data;
             })
     }
 
@@ -49,16 +46,21 @@ $(document).ready(function () {
                     var popup_content = "<strong>" + vehicle_type + " " + item.line + " - " + item.lastStop + "</strong><br>" +
                         "Vehicle: " + item.vehicleId + "<br>Bearing: " + item.bearing + "<br><span class='popup-cordinates'>" + item.latitude + ", " + item.longitude + "</span>";
                     var icon = L.divIcon({
-                            className: class_name,
-                            iconSize: [22, 22],
-                            iconAnchor: [11, 11],
-                            popupAnchor: [0, -11],
-                            html: '<div class="vehicle-bearing" id="vehicle-' + item.vehicleId + '"></div>' + item.line
-                        });
+                        className: class_name,
+                        iconSize: [22, 22],
+                        iconAnchor: [11, 11],
+                        popupAnchor: [0, -11],
+                        html: '<div class="vehicle-bearing" id="vehicle-' + item.vehicleId + '"></div>' + item.line
+                    });
 
                     if (!(item.vehicleId in vehicles)) {
-                        var marker = L.marker([item.latitude, item.longitude], {icon: icon})
-                            .bindPopup(popup_content);
+                        var marker = L.marker([item.latitude, item.longitude], {
+                            icon: icon,
+                            properties: {line: item.line}
+                        })
+                            .bindPopup(popup_content)
+                            .on('popupopen', onVehicleClick)
+                            .on('popupclose', onPopupClose);
                         vehicles[item.vehicleId] = {
                             lastAppearance: update_count,
                             marker: marker,
@@ -72,7 +74,7 @@ $(document).ready(function () {
                         vehicles[item.vehicleId].marker.setIcon(icon);
                         vehicles[item.vehicleId].lastAppearance = update_count;
                     }
-                    $(".vehicle-bearing#vehicle-" + item.vehicleId).css("transform", "rotate(" + item.bearing +"deg)");
+                    $(".vehicle-bearing#vehicle-" + item.vehicleId).css("transform", "rotate(" + item.bearing + "deg)");
                 });
 
                 for (var vehicleId in vehicles) {
@@ -98,9 +100,35 @@ $(document).ready(function () {
             })
     }
 
+    function updateStops() {
+        $.ajax("/mapobjects")
+            .done(function (data) {
+                map_objects = [];
+                data.forEach(function (item, idx) {
+                    if (item.type === 'stop') {
+                        var popup_content = "<strong>" + item.name + "</strong><br>" +
+                            "<span class='popup-cordinates'>" + item.id + "</span>";
+                        var icon = L.icon({
+                            iconUrl: '/static/stop.png',
+                            iconSize: [22, 22],
+                            iconAnchor: [11, 11],
+                            popupAnchor: [0, -11],
+                        });
+                        var marker = L.marker([item.lat, item.lon]).bindPopup(popup_content);
+                        marker.setIcon(icon);
+                        var ao = {marker: marker};
+                        map_objects.push(ao);
+                        map_object_layer.addLayer(ao.marker);
+                    }
+                })
+            })
+    }
+
     var map;
     var vehicle_layer = new L.FeatureGroup();
     var map_object_layer = new L.FeatureGroup();
+    var routeLayer = new L.FeatureGroup();
+    var currentVehicleRoute;
 
     var update_count = 0;
     var update_interval = 30; // Update Interval in seconds
@@ -108,6 +136,9 @@ $(document).ready(function () {
 
     var vehicles = {};
     var map_objects = [];
+
+    var selected_ref = null;
+    var linedata = null;
 
     $('#automatic-updates-enabled').on('click', function () {
         if (this.checked && update_interval_id == undefined) {
@@ -132,7 +163,7 @@ $(document).ready(function () {
 
     var map_pos_params = /[#]([0-9]+[\.][0-9]*)[;]([0-9]+[\.][0-9]*)[;]([0-9]+)/g.exec(window.location.href);
 
-    map.on('moveend', function() {
+    map.on('moveend', function () {
         var mapPos = map.getCenter();
         var mapZoom = map.getZoom();
         var url = window.location.href.split('#')[0] + '#' + mapPos.lat + ';' + mapPos.lng + ';' + mapZoom;
@@ -147,8 +178,10 @@ $(document).ready(function () {
     L.control.layers({"ÖPNV Karte": opnv_layer, "OpenStreetMap": osm_layer}, {}).addTo(map);
     map.addLayer(vehicle_layer);
     map.addLayer(map_object_layer);
+    map.addLayer(routeLayer);
 
     updateVehicles();
-    updateMapElements();
+    updateStops();
+    updateLineplans();
     update_interval_id = setInterval(updateVehicles, update_interval * 1000);
 });
