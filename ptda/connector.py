@@ -1,13 +1,9 @@
 import json
-from datetime import datetime
-from time import time
 
-import geojson
 import requests
-from geojson import LineString, FeatureCollection, Feature
 
-from ptda.exceptions import RequestException, NoDataException
-from ptda.objects import Vehicle, MapObject, Way, Node, Relation
+from ptda.exceptions import RequestException
+from ptda.parser import parse_positions, parse_map_objects, parse_lineplans
 
 
 class RemoteConnector:
@@ -20,27 +16,16 @@ class RemoteConnector:
 
         self.map_objects = []
 
+        self.ways = []
+        self.relations = []
+
     def update_positions(self):
         r = requests.get('{base_url}/vehiclelivedata?bundleIdentifier={identifier}'.format(base_url=self.base_url,
                                                                                            identifier=self.identifier))
         if r.status_code != requests.codes.ok:
             raise RequestException()
 
-        root_obj = json.loads(r.text)
-        if len(root_obj.get('vehicles', [])) < 1:
-            raise NoDataException()
-
-        self.vehicles = []
-
-        for v in root_obj['vehicles']:
-            self.vehicles.append(
-                Vehicle(v["lineId"], v['category'], v['lastStop'], v['status'], v['latitude'], v['longitude'],
-                        v['bearing'], v['type'], v['line'], v['vehicleId'], v['encodedPath']))
-        if 'timestamp' in root_obj:
-            self.vehicles_age = datetime.strptime(root_obj["timestamp"].split('+')[0], "%Y-%m-%dT%H:%M:%S").strftime(
-                '%s')
-        else:
-            self.vehicles_age = time()
+        self.vehicles, self.vehicles_age = parse_positions(json.loads(r.text))
 
         return True
 
@@ -52,9 +37,7 @@ class RemoteConnector:
         if r.status_code != requests.codes.ok:
             raise RequestException()
 
-        j = json.loads(r.content)
-
-        self.map_objects = [MapObject(x['type'], x['id'], x['name'], x['latitude'], x['longitude']) for x in j]
+        self.map_objects = parse_map_objects(json.loads(r.content))
 
         return True
 
@@ -66,25 +49,6 @@ class RemoteConnector:
         if r.status_code != requests.codes.ok:
             raise RequestException()
 
-        j = json.loads(r.content)
-
-        self.ways = {j['ways'][x]['id']: Way(j['ways'][x]['id'],
-                                             [Node(y['lat'], y['lon']) for y in j['ways'][x]['nodes']],
-                                             j['ways'][x]['encodedPath'])
-                     for x in j.get('ways', [])}
-
-        self.relations = [Relation(x['id'], x['name'], x['ref'], x['members']) for x in
-                          j.get('relations', [])]
+        self.ways, self.relations = parse_lineplans(json.loads(r.content))
 
         return True
-
-    def ways_geojson(self):
-        f = []
-        for w in self.ways:
-            path = []
-            for n in self.ways[w].nodes:
-                path.append((n.lon, n.lat))
-            f.append(Feature(geometry=LineString(path), id=self.ways[w].id,
-                             properties={'id': self.ways[w].id, 'encodedPath': self.ways[w].encoded_path}))
-        fc = FeatureCollection(f)
-        return geojson.dumps(fc)

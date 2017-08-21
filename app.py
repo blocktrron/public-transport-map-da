@@ -5,6 +5,7 @@ import json
 from flask import Flask
 
 from ptda.connector import RemoteConnector
+from ptda.parser import export_ways_to_geojson
 
 app = Flask(__name__, static_url_path='/static')
 connector = RemoteConnector('https://routing.geomobile.de/v4', 'de.ivanto.heagmobilo')
@@ -43,7 +44,7 @@ def load_mapobjects():
 @app.route("/lineplans")
 def load_lineplans():
     r = {'relations': [{'id': x.id, 'members': x.members, 'name': x.name, 'reference': x.referece} for x in
-                       connector.relations], 'waypoints': json.loads(connector.ways_geojson())}
+                       connector.relations], 'waypoints': json.loads(export_ways_to_geojson())}
 
     return json.dumps(r, ensure_ascii=False), 200, {
         'Content-Type': 'application/json; charset=utf-8'}
